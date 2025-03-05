@@ -3,25 +3,26 @@ import csv
 from paraview.simple import *
 from paraview.servermanager import Fetch
 
+length = "5"
 # List of directories to process
 directories = [
-    "/media/data/Feb/copper_5um_2M",
-    "/media/data/Feb/aluminum_5um_2M",
-    "/media/data/Feb/iron_5um_2M",
-    "/media/data/Feb/silver_5um_2M",
-    "/media/data/Feb/nickel_5um_2M",
-    "/media/data/Feb/titanium_5um_2M",
-    "/media/data/Feb/cobalt_5um_2M"
+    "/media/data/Feb/copper_"+length+"um_2M",
+    "/media/data/Feb/aluminum_"+length+"um_2M",
+    "/media/data/Feb/iron_"+length+"um_2M",
+    "/media/data/Feb/silver_"+length+"um_2M",
+    "/media/data/Feb/nickel_"+length+"um_2M",
+    "/media/data/Feb/titanium_"+length+"um_2M",
+    "/media/data/Feb/cobalt_"+length+"um_2M"
 ]
 
 # Output CSV filename
-output_csv = "/media/data/Feb/all_simulations_lengths.csv"
+output_csv = "/media/data/Feb/python/data/lengths_"+length+".csv"
 
 # Dictionary to store extracted data
 data_dict = {}
 
 # Use one simulation to extract the common time steps
-reference_case = "/media/data/Feb/aluminum_5um_2M/case.foam"
+reference_case = "/media/data/Feb/silver_"+length+"um_2M/case.foam"
 casefoam = OpenFOAMReader(registrationName='reference_case', FileName=reference_case)
 casefoam.MeshRegions = ['internalMesh']
 casefoam.CellArrays = ['alpha.metal']
