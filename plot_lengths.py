@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load the CSV file
-length="100"
+length="10"
 length_=float(length)
 df = pd.read_csv("./data/lengths_"+length+".csv").replace("NA", float("nan"))
 
@@ -42,7 +42,7 @@ for mat in materials:
 # Formatting
 plt.xlabel("Time")
 plt.ylabel("Length")
-plt.title("Time vs Length_x and Length_y")
+#plt.title("Length_x (2*neck_radius) and Length_y vs Time")
 plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
 plt.grid(True)  # Enable grid for better readability
 plt.tight_layout(rect=[0, 0, 1.0, 1.0])  # Adjust layout
