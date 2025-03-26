@@ -57,7 +57,7 @@ for mat in materials:
     plt.scatter(file_lengths, times, color=metal_colors[mat], s=marker_sizes[mat], label=mat.capitalize())
     for i, length in enumerate(file_lengths):
         plt.hlines(times[i], length - line_lengths[mat], length + line_lengths[mat], color=metal_colors[mat], alpha=0.8, linewidth=1.5)
-plt.xlabel("R0: Starting Sphere Radius (μm)")
+plt.xlabel("R0: Starting Spheres Radius (μm)")
 plt.ylabel("Coalescence Time")
 plt.title("Coalescence Time Based on Length_x = Length_y")
 plt.grid(True, linestyle="--", alpha=0.7)
@@ -72,8 +72,8 @@ for mat in materials:
     for i, length in enumerate(file_lengths):
         plt.hlines(times[i], length - line_lengths[mat], length + line_lengths[mat], color=metal_colors[mat], alpha=0.8, linewidth=1.5)
 for mat, values in theoretical_values.items():
-    plt.plot(lengths, values, linestyle="dotted", color=metal_colors[mat], label=f"Theoretical {mat.capitalize()}")
-plt.xlabel("R0: Starting Sphere Radius (μm)")
+    plt.plot(lengths, values, linestyle="dashed", color=metal_colors[mat], label=f"Theoretical {mat.capitalize()}")
+plt.xlabel("R0: Starting Spheres Radius (μm)")
 plt.ylabel("Coalescence Time")
 plt.title("Coalescence Time with Theoretical Model")
 plt.grid(True, linestyle="--", alpha=0.7)
