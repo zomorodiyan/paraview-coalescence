@@ -40,10 +40,6 @@ fix m3 all property/global coefficientRestitution atomtypepair 1 0.3
 fix m4 all property/global coefficientFriction atomtypepair 1 0.5 
 fix m5 all property/global coefficientRollingFriction atomtypepair 1 1.0 
 
-# --- Blade Mesh Surface ---
-fix blade all mesh/surface file ../meshes/Blade80.stl type 1 scale 0.001 curvature_tolerant yes
-fix walls all wall/gran model hertz tangential history rolling_friction epsd2 mesh n_meshes 1 meshes blade
-
 # bottom wall
 fix wall_zlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane 3.17e-3
 fix wall_zhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane 3.68e-3
@@ -119,6 +115,3 @@ unfix ins
 run ${settlesteps}      # Settling phase
 unfix wall_xhi
 unfix wall_zhi
-fix MoveBlade all move/mesh mesh blade linear 0.009 0.0 0.0
-run ${bladesteps}       # Blade movement
-unfix MoveBlade
