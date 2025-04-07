@@ -10,7 +10,7 @@ newton off
 variable dt           equal 1e-6
 variable filltime     equal 0.01
 variable fillsteps    equal ${filltime}/${dt}
-variable settletime   equal 0.04 
+variable settletime   equal 0.02 
 variable settlesteps  equal ${settletime}/${dt}
 timestep ${dt}
 
@@ -49,7 +49,7 @@ fix wall_yhi all wall/gran model hertz tangential history rolling_friction epsd2
 
 # --- Powder Characteristics ---
 variable density equal 8190           # kg/m³
-variable fillmass equal 0.0000002       # Total fill mass (kg)
+variable fillmass equal 0.00000035       # Total fill mass (kg)
 variable insertions equal 1           # Number of insertion steps
 
 # Radii
