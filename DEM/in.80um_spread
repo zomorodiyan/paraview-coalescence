@@ -8,16 +8,14 @@ newton off
 
 # --- Simulation Time Parameters ---
 variable dt           equal 1e-6
-variable filltime     equal 1.0
+variable filltime     equal 0.01
 variable fillsteps    equal ${filltime}/${dt}
-variable settletime   equal 0.05 
+variable settletime   equal 0.04 
 variable settlesteps  equal ${settletime}/${dt}
-variable bladetime    equal 1.0
-variable bladesteps   equal ${bladetime}/${dt}
 timestep ${dt}
 
 # --- Domain Definition ---
-region reg block -4.76e-3 4.51e-3 -4.51e-3 4.51e-3 3.16e-3 3.67e-3 units box
+region reg block -0.128e-3 0.128e-3 -0.128e-3 0.128e-3 0.0e-3 1.024e-3 units box
 create_box 1 reg
 
 # --- Neighbor Settings ---
@@ -41,18 +39,18 @@ fix m4 all property/global coefficientFriction atomtypepair 1 0.5
 fix m5 all property/global coefficientRollingFriction atomtypepair 1 1.0 
 
 # bottom wall
-fix wall_zlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane 3.17e-3
-fix wall_zhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane 3.68e-3
+fix wall_zlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane 0.0e-3
+fix wall_zhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane 1.024e-3
 # Side walls
-fix wall_xlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane -4.5e-3
-fix wall_xhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  4.5e-3
-fix wall_ylo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane -4.5e-3
-fix wall_yhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane  4.5e-3
+fix wall_xlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane -0.128e-3
+fix wall_xhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  0.128e-3
+fix wall_ylo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane -0.128e-3
+fix wall_yhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane  0.128e-3
 
 # --- Powder Characteristics ---
-variable density equal 8190          # kg/m³
-variable fillmass equal 0.00008      # Total fill mass (kg)
-variable insertions equal 10         # Number of insertion steps
+variable density equal 8190           # kg/m³
+variable fillmass equal 0.0000002       # Total fill mass (kg)
+variable insertions equal 1           # Number of insertion steps
 
 # Radii
 variable radius1 equal 6.5e-6
@@ -87,8 +85,8 @@ fix pts4 all particletemplate/sphere 32452867 atom_type 1 density constant ${den
 
 fix pdd1 all particledistribution/discrete 49979687 4 pts1 ${f1} pts2 ${f2} pts3 ${f3} pts4 ${f4}
 
-# --- Insertion Region ---
-region ins_reg block -4.0e-3 4.0e-3 -4.0e-3 4.0e-3 3.40e-3 3.50e-3 units box
+# --- Insertion Region (estimate volume 8e-12 ---
+region ins_reg block -0.128e-3 0.128e-3 -0.128e-3 0.128e-3 0.0e-3 1.024e-3 units box volume_limit 1e-12
 
 # --- Particle Insertion ---
 fix ins all insert/pack seed 49979693 distributiontemplate pdd1 &
