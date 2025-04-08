@@ -5,6 +5,7 @@
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
+
 FoamFile
 {
     version     2.0;
@@ -13,7 +14,6 @@ FoamFile
     location    "system";
     object      setFieldsDict;
 }
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 defaultFieldValues
 (
@@ -22,25 +22,22 @@ defaultFieldValues
 
 regions
 (
-    sphereToCell
+    surfaceToCell
     {
-        centre (16.25e-6 0 0);
-        radius 16.25e-6;
-        fieldValues
-        (
-            volScalarFieldValue alpha.metal 1
-        );
-    }
+        file "constant/triSurface/4_size.stl";
+        nearDistance 1e-7;
+        curvature 1e-4;
+        outsidePoints ((0.0 0.0 0.000255));
+        regularization 1e-6;
+        smooth 0;
 
-    sphereToCell
-    {
-        centre (-16.25e-6 0 0);
-        radius 16.25e-6;
+        includeCut true;
+        includeInside true;
+        includeOutside false;
+
         fieldValues
         (
             volScalarFieldValue alpha.metal 1
         );
     }
 );
-
-// ************************************************************************* //
