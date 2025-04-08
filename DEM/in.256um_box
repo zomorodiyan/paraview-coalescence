@@ -105,7 +105,6 @@ variable dumpstep equal ${dumptime}/${dt}
 
 run 1
 dump dmp all custom/vtk ${dumpstep} post80/particles_*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
-dump dumpstl all mesh/stl ${dumpstep} post80/dump*.stl
 
 # --- Simulation Phases ---
 run ${fillsteps}        # Insertion phase
