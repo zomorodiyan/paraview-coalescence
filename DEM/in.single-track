@@ -7,7 +7,7 @@ communicate single vel yes
 newton off
 
 # --- Simulation Time Parameters ---
-variable dt           equal 1e-6
+variable dt           equal 1e-7
 variable filltime     equal 0.01
 variable fillsteps    equal ${filltime}/${dt}
 variable settletime   equal 0.02 
@@ -38,31 +38,31 @@ fix m3 all property/global coefficientRestitution atomtypepair 1 0.3
 fix m4 all property/global coefficientFriction atomtypepair 1 0.5 
 fix m5 all property/global coefficientRollingFriction atomtypepair 1 1.0 
 
-# bottom wall
-fix wall_zlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane 0.0e-3
-fix wall_zhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane 1.024e-3
+# bottom/top wall
+fix wall_zlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane  0.0e-3
+fix wall_zhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane  0.250e-3
 # Side walls
-fix wall_xlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane -0.128e-3
-fix wall_xhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  0.128e-3
-fix wall_ylo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane -0.128e-3
-fix wall_yhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane  0.128e-3
+fix wall_xlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  0.0e-3
+fix wall_xhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  1.0e-3
+fix wall_ylo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane -0.1e-3
+fix wall_yhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane  0.1e-3
 
 # --- Powder Characteristics ---
-variable density equal 8190           # kg/m³
-variable fillmass equal 0.00000035       # Total fill mass (kg)
-variable insertions equal 1           # Number of insertion steps
+variable density equal 8190         # kg/m³
+variable fillmass equal 0.00000035  # 0.00000035       # Total fill mass (kg)
+variable insertions equal 1         # Number of insertion steps
 
 # Radii
-variable radius1 equal 6.5e-6
-variable radius2 equal 12.5e-6
-variable radius3 equal 21.5e-6
-variable radius4 equal 30e-6
+variable radius1 equal 1.85e-6
+variable radius2 equal 6.95e-6
+variable radius3 equal 12.05e-6
+variable radius4 equal 17.15e-6
 
 # Fractions
-variable f1 equal 0.1
-variable f2 equal 0.4
-variable f3 equal 0.4
-variable f4 equal 0.1
+variable f1 equal 0.07229
+variable f2 equal 0.42771
+variable f3 equal 0.42771
+variable f4 equal 0.07229
 
 # --- Average Particle Volume & Mass ---
 variable pi equal 3.141592653589793
@@ -78,7 +78,7 @@ variable particles_per_insert equal ${nparticles}/${insertions}
 variable insert_every equal 2*0.9*${filltime}/${insertions}/${dt}
 
 # --- Particle Templates & Distribution ---
-fix pts1 all particletemplate/sphere 15485863 atom_type 1 density constant ${density} radius constant ${radius1} volume_limit 1e-16
+fix pts1 all particletemplate/sphere 15485863 atom_type 1 density constant ${density} radius constant ${radius1} volume_limit 1e-18
 fix pts2 all particletemplate/sphere 15485867 atom_type 1 density constant ${density} radius constant ${radius2} volume_limit 1e-16
 fix pts3 all particletemplate/sphere 32452843 atom_type 1 density constant ${density} radius constant ${radius3} volume_limit 1e-16
 fix pts4 all particletemplate/sphere 32452867 atom_type 1 density constant ${density} radius constant ${radius4} volume_limit 1e-16
@@ -107,6 +107,11 @@ run 1
 dump dmp all custom/vtk ${dumpstep} post80/particles_*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
 
 # --- Simulation Phases ---
+#fix property/global dcor 1 scalar yes yes 0.1  # Low restitution
+#fix property/global damp 1 scalar yes yes 0.5  # Increased damping
+#fix damping all viscous 1e-8
+
+
 run ${fillsteps}        # Insertion phase
 unfix ins
 run ${settlesteps}      # Settling phase
