@@ -10,12 +10,14 @@ newton off
 variable dt           equal 1e-7
 variable filltime     equal 0.01
 variable fillsteps    equal ${filltime}/${dt}
-variable settletime   equal 0.02 
+variable settletime   equal 0.01 
 variable settlesteps  equal ${settletime}/${dt}
+variable bladetime   equal 0.1 
+variable bladesteps  equal ${bladetime}/${dt}
 timestep ${dt}
 
 # --- Domain Definition ---
-region reg block 0.0e-3 1.0e-3 -0.1e-3 0.1e-3 0.0e-3 0.250e-3 units box
+region reg block 0.0e-3 1.4e-3 -0.1e-3 0.1e-3 0.0e-3 0.250e-3 units box
 create_box 1 reg
 
 # --- Neighbor Settings ---
@@ -43,28 +45,28 @@ fix wall_zlo all wall/gran model hertz tangential history rolling_friction epsd2
 fix wall_zhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane  0.250e-3
 # Side walls
 fix wall_xlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  0.0e-3
-fix wall_xhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  1.0e-3
+fix wall_xhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  1.4e-3
 fix wall_ylo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane -0.1e-3
 fix wall_yhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane  0.1e-3
 
 # --- Powder Characteristics ---
 variable density equal 8190         # kg/m³
-variable fillmass equal 0.00000045  # 0.00000035       # Total fill mass (kg)
+variable fillmass equal 0.0000005   # Total fill mass (kg)
 variable insertions equal 1         # Number of insertion steps
 
-# Radii in microns → meters
-variable r1 equal 3.70e-6
-variable r2 equal 7.10e-6
-variable r3 equal 10.50e-6
-variable r4 equal 13.90e-6
-variable r5 equal 17.30e-6
-variable r6 equal 20.70e-6
-variable r7 equal 24.10e-6
-variable r8 equal 27.50e-6
-variable r9 equal 30.90e-6
-variable r10 equal 34.30e-6
+# Radii in meters
+variable r1 equal 1.85e-6
+variable r2 equal 3.55e-6
+variable r3 equal 5.25e-6
+variable r4 equal 6.95e-6
+variable r5 equal 8.65e-6
+variable r6 equal 10.35e-6
+variable r7 equal 12.05e-6
+variable r8 equal 13.75e-6
+variable r9 equal 15.45e-6
+variable r10 equal 17.15e-6
 
-# Fractions
+# Mass/Volume Fractions
 variable f1 equal 0.02461
 variable f2 equal 0.05424
 variable f3 equal 0.09810
@@ -110,7 +112,7 @@ fix pts10 all particletemplate/sphere 24907 atom_type 1 density constant ${densi
 fix pdd1 all particledistribution/discrete 49979687 10 pts1 ${f1} pts2 ${f2} pts3 ${f3} pts4 ${f4} pts5 ${f5} pts6 ${f6} pts7 ${f7} pts8 ${f8} pts9 ${f9} pts10 ${f10}
 
 # --- Insertion Region (estimate volume 8e-12 ---
-region ins_reg block 0.0e-3 1.0e-3 -0.1e-3 0.1e-3 0.0e-3 0.250e-3 units box volume_limit 1e-20
+region ins_reg block 0.0e-3 1.4e-3 -0.1e-3 0.1e-3 0.0e-3 0.250e-3 units box volume_limit 1e-20
 
 # --- Particle Insertion ---
 fix ins all insert/pack seed 49979693 distributiontemplate pdd1 &
@@ -119,19 +121,29 @@ fix ins all insert/pack seed 49979693 distributiontemplate pdd1 &
 
 # --- Output ---
 shell mkdir post80
-compute c_erot all erotate/sphere
-thermo_style custom step atoms ke c_c_erot vol
-thermo 100
+compute c_erot all erotate/sphere #  creates a compute that calculates the rotational kinetic energy of all spherical particles
+thermo_style custom step atoms ke c_c_erot vol # configures the output format printed during the simulation
+thermo 100 # output frequency every # time-step
 thermo_modify lost ignore norm no
+
 
 variable dumptime equal 0.001
 variable dumpstep equal ${dumptime}/${dt}
 
 run 1
 dump dmp all custom/vtk ${dumpstep} post80/particles_*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
-
 run ${fillsteps}        # Insertion phase
 unfix ins
 run ${settlesteps}      # Settling phase
+
 unfix wall_xhi
 unfix wall_zhi
+
+# insert the stl file 
+fix blade all mesh/surface file meshes/blade50.stl type 1 scale 0.000001 curvature_tolerant yes
+fix walls all wall/gran model hertz tangential history rolling_friction epsd2 mesh n_meshes 1 meshes blade
+
+variable dt           equal 1e-6
+fix MoveBlade all move/mesh mesh blade linear 0.0135 0.0 0.0
+run ${bladesteps}       # Blade movement
+unfix MoveBlade
