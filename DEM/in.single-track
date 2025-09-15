@@ -1,0 +1,149 @@
+# --- Powder spreading simulation script with dynamic insertion parameters ---
+
+atom_style granular
+units si
+boundary f f f
+communicate single vel yes
+newton off
+
+# --- Simulation Time Parameters ---
+variable dt           equal 1e-7
+variable filltime     equal 0.01
+variable fillsteps    equal ${filltime}/${dt}
+variable settletime   equal 0.01 
+variable settlesteps  equal ${settletime}/${dt}
+variable bladetime   equal 0.1 
+variable bladesteps  equal ${bladetime}/${dt}
+timestep ${dt}
+
+# --- Domain Definition ---
+region reg block 0.0e-3 1.4e-3 -0.1e-3 0.1e-3 0.0e-3 0.250e-3 units box
+create_box 1 reg
+
+# --- Neighbor Settings ---
+variable neighlen equal 5e-6
+neighbor ${neighlen} bin
+neigh_modify delay 0
+
+# --- Contact Model ---
+pair_style gran model hertz tangential history
+pair_coeff * *
+
+# --- Integration & Gravity ---
+fix integrator all nve/sphere
+fix gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+# --- Material Properties ---
+fix m1 all property/global youngsModulus peratomtype 5e6
+fix m2 all property/global poissonsRatio peratomtype 0.45
+fix m3 all property/global coefficientRestitution atomtypepair 1 0.3 
+fix m4 all property/global coefficientFriction atomtypepair 1 0.5 
+fix m5 all property/global coefficientRollingFriction atomtypepair 1 1.0 
+
+# bottom/top wall
+fix wall_zlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane  0.0e-3
+fix wall_zhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 zplane  0.250e-3
+# Side walls
+fix wall_xlo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  0.0e-3
+fix wall_xhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 xplane  1.4e-3
+fix wall_ylo all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane -0.1e-3
+fix wall_yhi all wall/gran model hertz tangential history rolling_friction epsd2 primitive type 1 yplane  0.1e-3
+
+# --- Powder Characteristics ---
+variable density equal 8190         # kg/m³
+variable fillmass equal 0.0000005   # Total fill mass (kg)
+variable insertions equal 1         # Number of insertion steps
+
+# Radii in meters
+variable r1 equal 1.85e-6
+variable r2 equal 3.55e-6
+variable r3 equal 5.25e-6
+variable r4 equal 6.95e-6
+variable r5 equal 8.65e-6
+variable r6 equal 10.35e-6
+variable r7 equal 12.05e-6
+variable r8 equal 13.75e-6
+variable r9 equal 15.45e-6
+variable r10 equal 17.15e-6
+
+# Mass/Volume Fractions
+variable f1 equal 0.02461
+variable f2 equal 0.05424
+variable f3 equal 0.09810
+variable f4 equal 0.14562
+variable f5 equal 0.17743
+variable f6 equal 0.17743
+variable f7 equal 0.14562
+variable f8 equal 0.09810
+variable f9 equal 0.05424
+variable f10 equal 0.02461
+
+# --- Average Particle Volume & Mass ---
+variable pi equal 3.141592653589793
+variable v1 equal ${f1}*(4.0/3.0)*${pi}*${r1}^3
+variable v2 equal ${f2}*(4.0/3.0)*${pi}*${r2}^3
+variable v3 equal ${f3}*(4.0/3.0)*${pi}*${r3}^3
+variable v4 equal ${f4}*(4.0/3.0)*${pi}*${r4}^3
+variable v5 equal ${f5}*(4.0/3.0)*${pi}*${r5}^3
+variable v6 equal ${f6}*(4.0/3.0)*${pi}*${r6}^3
+variable v7 equal ${f7}*(4.0/3.0)*${pi}*${r7}^3
+variable v8 equal ${f8}*(4.0/3.0)*${pi}*${r8}^3
+variable v9 equal ${f9}*(4.0/3.0)*${pi}*${r9}^3
+variable v10 equal ${f10}*(4.0/3.0)*${pi}*${r10}^3
+variable vavg equal ${v1}+${v2}+${v3}+${v4}+${v5}+${v6}+${v7}+${v8}+${v9}+${v10}
+
+variable mpavg equal ${vavg}*${density}
+variable nparticles equal ${fillmass}/${mpavg}
+variable particles_per_insert equal ${nparticles}/${insertions}
+variable insert_every equal 2*0.9*${filltime}/${insertions}/${dt}
+
+# --- Particle Templates & Distribution ---
+fix pts1 all particletemplate/sphere 15485863 atom_type 1 density constant ${density} radius constant ${r1} volume_limit 1e-20
+fix pts2 all particletemplate/sphere 15485867 atom_type 1 density constant ${density} radius constant ${r2} volume_limit 1e-20
+fix pts3 all particletemplate/sphere 32452843 atom_type 1 density constant ${density} radius constant ${r3} volume_limit 1e-20
+fix pts4 all particletemplate/sphere 32452867 atom_type 1 density constant ${density} radius constant ${r4} volume_limit 1e-20
+fix pts5 all particletemplate/sphere 24097 atom_type 1 density constant ${density} radius constant ${r5} volume_limit 1e-20
+fix pts6 all particletemplate/sphere 24103 atom_type 1 density constant ${density} radius constant ${r6} volume_limit 1e-20
+fix pts7 all particletemplate/sphere 24179 atom_type 1 density constant ${density} radius constant ${r7} volume_limit 1e-20
+fix pts8 all particletemplate/sphere 24533 atom_type 1 density constant ${density} radius constant ${r8} volume_limit 1e-20
+fix pts9 all particletemplate/sphere 24527 atom_type 1 density constant ${density} radius constant ${r9} volume_limit 1e-20
+fix pts10 all particletemplate/sphere 24907 atom_type 1 density constant ${density} radius constant ${r10} volume_limit 1e-20
+
+fix pdd1 all particledistribution/discrete 49979687 10 pts1 ${f1} pts2 ${f2} pts3 ${f3} pts4 ${f4} pts5 ${f5} pts6 ${f6} pts7 ${f7} pts8 ${f8} pts9 ${f9} pts10 ${f10}
+
+# --- Insertion Region (estimate volume 8e-12 ---
+region ins_reg block 0.0e-3 1.4e-3 -0.1e-3 0.1e-3 0.0e-3 0.250e-3 units box volume_limit 1e-20
+
+# --- Particle Insertion ---
+fix ins all insert/pack seed 49979693 distributiontemplate pdd1 &
+  insert_every ${insert_every} overlapcheck yes all_in yes &
+  vel constant 0.0 0.0 0.0 particles_in_region ${particles_per_insert} region ins_reg
+
+# --- Output ---
+shell mkdir post80
+compute c_erot all erotate/sphere #  creates a compute that calculates the rotational kinetic energy of all spherical particles
+thermo_style custom step atoms ke c_c_erot vol # configures the output format printed during the simulation
+thermo 100 # output frequency every # time-step
+thermo_modify lost ignore norm no
+
+
+variable dumptime equal 0.001
+variable dumpstep equal ${dumptime}/${dt}
+
+run 1
+dump dmp all custom/vtk ${dumpstep} post80/particles_*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+run ${fillsteps}        # Insertion phase
+unfix ins
+run ${settlesteps}      # Settling phase
+
+unfix wall_xhi
+unfix wall_zhi
+
+# insert the stl file 
+fix blade all mesh/surface file meshes/blade50.stl type 1 scale 0.000001 curvature_tolerant yes
+fix walls all wall/gran model hertz tangential history rolling_friction epsd2 mesh n_meshes 1 meshes blade
+
+variable dt           equal 1e-6
+fix MoveBlade all move/mesh mesh blade linear 0.0135 0.0 0.0
+run ${bladesteps}       # Blade movement
+unfix MoveBlade
